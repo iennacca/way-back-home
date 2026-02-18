@@ -83,7 +83,7 @@ def main():
     print()
     if all_passed:
         print("✓ Ready to proceed!")
-        print("  Next step: run ./scripts/setup.sh to configure your project and connect to Mission Control.")
+        print("  Please continue with the codelab instructions.")
         return 0
     else:
         print("✗ Please fix the issues above before continuing.")

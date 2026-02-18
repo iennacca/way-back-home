@@ -576,8 +576,7 @@ def main():
     print("=" * 50)
     print("\nYour crash site evidence is ready for analysis.")
     print("Evidence files saved in: outputs/")
-    print("\nNext step: Build the MCP analysis tools")
-    print("Continue with the codelab instructions")
+    print("\n✅ Evidence generation complete! Ready to proceed with the codelab instructions.")
 
 
 if __name__ == "__main__":

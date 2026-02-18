@@ -124,9 +124,7 @@ def main():
     # Save updated config
     save_config(config)
 
-    print("\n✓ Preferences saved!")
-    print("Next: Open generator.py and follow the codelab instructions")
-    print("Then run: python create_identity.py")
+    print("\n✅ Preferences saved! Ready to proceed with the codelab instructions.")
 
 
 if __name__ == "__main__":

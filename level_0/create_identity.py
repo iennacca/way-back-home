@@ -210,7 +210,7 @@ def print_success(config: dict, upload_result: dict):
     print("║  🗺️  You're now on the map!                                   ║")
     print(f"║  {map_url:<60} ║")
     print("║                                                               ║")
-    print("║  NEXT: Proceed to Level 1 to pinpoint your exact location!   ║")
+    print("║  ✅ Level 0 complete! Ready to proceed with the codelab.      ║")
     print("║                                                               ║")
     print("╚═══════════════════════════════════════════════════════════════╝")
 
