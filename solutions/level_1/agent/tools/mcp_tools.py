@@ -7,7 +7,7 @@ deployed on Cloud Run.
 Connection Pattern: StreamableHTTP
 - Uses StreamableHTTPConnectionParams for HTTP-based MCP communication
 - The MCP endpoint is at: {MCP_SERVER_URL}/mcp
-- This is the CUSTOM MCP pattern (vs. OneMCP which is managed by Google)
+- This is the CUSTOM MCP pattern (vs. Google Cloud MCP servers which are managed by Google)
 
 The MCP server provides:
 - analyze_geological: Soil sample analysis via Gemini Vision

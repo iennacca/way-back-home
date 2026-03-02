@@ -6,7 +6,7 @@
 # - Vertex AI (for Gemini)
 # - Cloud Run (for MCP server and agent deployment)
 # - BigQuery (for star catalog)
-# - OneMCP BigQuery (managed MCP access to BigQuery)
+# - Google Cloud MCP server for BigQuery (managed MCP access to BigQuery)
 # - Service accounts and IAM bindings
 #
 # Run this ONCE before starting Level 1.
@@ -75,20 +75,20 @@ gcloud services enable iam.googleapis.com --project=$PROJECT_ID
 echo "      ✓ IAM API enabled"
 
 # -----------------------------------------------------------------------------
-# Step 2: Enable OneMCP BigQuery
+# Step 2: Enable Google Cloud MCP server for BigQuery
 # -----------------------------------------------------------------------------
 echo ""
-echo "[2/6] Enabling OneMCP BigQuery (Managed MCP)..."
+echo "[2/6] Enabling Google Cloud MCP server for BigQuery..."
 echo "      This allows agents to connect to BigQuery via MCP protocol."
 
 # Check if already enabled
 ENABLED_SERVICES=$(gcloud beta services mcp list --enabled --format="value(name.basename())" --project=$PROJECT_ID 2>/dev/null || echo "")
 
 if [[ "$ENABLED_SERVICES" == *"bigquery.googleapis.com"* ]]; then
-    echo "      ✓ OneMCP BigQuery already enabled"
+    echo "      ✓ Google Cloud MCP server for BigQuery already enabled"
 else
     gcloud beta services mcp enable bigquery.googleapis.com --project=$PROJECT_ID
-    echo "      ✓ OneMCP BigQuery enabled"
+    echo "      ✓ Google Cloud MCP server for BigQuery enabled"
 fi
 
 # -----------------------------------------------------------------------------
@@ -132,7 +132,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --quiet >/dev/null 2>&1
 echo "      ✓ Cloud Run Invoker role granted"
 
-# Grant BigQuery User role (for OneMCP BigQuery access)
+# Grant BigQuery User role (for Google Cloud MCP server for BigQuery access)
 echo "      Granting BigQuery User role..."
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SERVICE_ACCOUNT" \
@@ -312,7 +312,7 @@ export BACKEND_URL="$BACKEND_URL"
 export SERVICE_ACCOUNT="$SERVICE_ACCOUNT"
 export REPO_NAME="$REPO_NAME"
 
-# OneMCP BigQuery URL
+# Google Cloud MCP server for BigQuery URL
 export BIGQUERY_MCP_URL="https://bigquery.googleapis.com/mcp"
 
 # These will be set after deploying services:
@@ -341,7 +341,7 @@ echo "  • Vertex AI (Gemini)"
 echo "  • Cloud Run (deployments)"
 echo "  • Cloud Build (CI/CD)"
 echo "  • BigQuery (star catalog)"
-echo "  • OneMCP BigQuery (managed MCP access)"
+echo "  • Google Cloud MCP server for BigQuery (managed MCP access)"
 echo ""
 echo "Service Account: $SERVICE_ACCOUNT"
 echo "  Roles granted:"

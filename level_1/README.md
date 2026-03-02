@@ -16,7 +16,7 @@ Your beacon is pulsing—but it's barely a flicker. The rescue teams can see *so
 | **{key} State Templating** | Access state values in agent instructions |
 | **ToolContext** | Access state values within tool functions |
 | **Custom MCP Servers** | Build tools with FastMCP on Cloud Run |
-| **OneMCP BigQuery** | Connect to Google's managed MCP for database access |
+| **Google Cloud MCP server for BigQuery** | Connect to Google's managed MCP for database access |
 | **Multimodal AI** | Analyze images and video+audio with Gemini |
 
 ## ✅ What You'll Build
@@ -25,7 +25,7 @@ By the end of this level, you will have:
 
 - 🔬 Deployed a **custom MCP server** for geological and botanical analysis
 - 🤖 Created **three specialist agents** running in parallel
-- 🔗 Connected to **OneMCP BigQuery** for star catalog queries
+- 🔗 Connected to **Google Cloud MCP server for BigQuery** for star catalog queries
 - 🎯 Built a **root orchestrator** with 2-of-3 consensus logic
 - 🔦 **Activated your beacon** at full strength!
 
@@ -91,7 +91,7 @@ Implement the placeholder sections in:
 | File | What to Implement |
 |------|-------------------|
 | `agent/tools/mcp_tools.py` | MCP connection to your Cloud Run server |
-| `agent/tools/star_tools.py` | Gemini Vision + OneMCP BigQuery connection |
+| `agent/tools/star_tools.py` | Gemini Vision + Google Cloud MCP server for BigQuery connection |
 | `agent/tools/confirm_tools.py` | Location confirmation with ToolContext |
 | `agent/agents/geological_analyst.py` | Soil analysis specialist |
 | `agent/agents/botanical_analyst.py` | Flora analysis specialist |
@@ -166,8 +166,8 @@ For detailed step-by-step instructions with explanations:
 │             │               │                   │                │
 │             ▼               ▼                   ▼                │
 │   ┌─────────────────┐ ┌─────────────────┐ ┌──────────────────┐  │
-│   │  Custom MCP     │ │  Custom MCP     │ │ OneMCP BigQuery  │  │
-│   │  (Cloud Run)    │ │  (Cloud Run)    │ │ (Google-hosted)  │  │
+│   │  Custom MCP     │ │  Custom MCP     │ │ Google Cloud MCP │  │
+│   │  (Cloud Run)    │ │  (Cloud Run)    │ │ server (BQ)      │  │
 │   │                 │ │                 │ │                  │  │
 │   │ analyze_        │ │ analyze_        │ │ execute_query    │  │
 │   │ geological      │ │ botanical       │ │ (star_catalog)   │  │
@@ -219,7 +219,7 @@ geological_analyst = Agent(
 | Pattern | When to Use | Example |
 |---------|-------------|---------|
 | **Custom MCP** | Custom AI logic, domain-specific processing | `location-analyzer` on Cloud Run |
-| **OneMCP** | Standard database/API access | `bigquery.googleapis.com/mcp` |
+| **Google Cloud MCP servers** | Standard database/API access | `bigquery.googleapis.com/mcp` |
 
 ## 🌍 The Planet's Biomes
 

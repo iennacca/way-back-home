@@ -10,7 +10,7 @@ google-genai>=1.0.0
 # Google Cloud BigQuery (fallback for direct queries if needed)
 google-cloud-bigquery>=3.0.0
 
-# Google Auth (for OneMCP BigQuery OAuth token)
+# Google Auth (for Google Cloud MCP server for BigQuery OAuth token)
 google-auth>=2.0.0
 
 # MCP Protocol SDK (for client connections)

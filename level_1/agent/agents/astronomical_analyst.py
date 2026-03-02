@@ -10,8 +10,8 @@ It uses a two-step process with TWO DIFFERENT TOOL PATTERNS:
    - Gemini Vision analyzes the star field image
    - Returns: primary_star, nebula_type, stellar_color
 
-2. OneMCP BigQuery (execute_query via MCPToolset):
-   - Connects to Google's hosted BigQuery MCP server
+2. Google Cloud MCP server for BigQuery (execute_query via MCPToolset):
+   - Connects to Google Cloud's managed BigQuery MCP server
    - Uses the pre-built execute_query tool
    - Queries the star_catalog table to find the matching biome
 

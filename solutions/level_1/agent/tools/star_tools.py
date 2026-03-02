@@ -7,8 +7,8 @@ This module provides tools for astronomical analysis using TWO different pattern
    - Uses Gemini Vision directly to analyze star field images
    - Returns structured stellar features (primary_star, nebula_type, etc.)
 
-2. OneMCP BigQuery (query via MCPToolset):
-   - Connects to Google's hosted BigQuery MCP server
+2. Google Cloud MCP server for BigQuery (query via MCPToolset):
+   - Connects to Google Cloud's managed BigQuery MCP server
    - Uses the pre-built execute_query tool to query the star_catalog
    - Demonstrates the MANAGED MCP pattern vs. custom MCP
 
@@ -52,7 +52,7 @@ logger.info(f"[Star Tools] Initialized for project: {PROJECT_ID}")
 
 
 # =============================================================================
-# OneMCP BigQuery Connection
+# Google Cloud MCP server for BigQuery Connection
 # =============================================================================
 # This is the MANAGED MCP pattern - connecting to Google's BigQuery MCP server
 # instead of building our own or using the BigQuery Python SDK directly.
@@ -80,7 +80,7 @@ def get_bigquery_mcp_toolset():
     if _bigquery_toolset is not None:
         return _bigquery_toolset
 
-    logger.info("[Star Tools] Connecting to OneMCP BigQuery...")
+    logger.info("[Star Tools] Connecting to Google Cloud MCP server for BigQuery...")
 
     # Get OAuth credentials
     credentials, project_id = google.auth.default(

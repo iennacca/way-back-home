@@ -28,7 +28,7 @@ You're a space explorer whose ship has crashed on an uncharted planet. Your resc
 | **Frontend** | Next.js 14, Three.js, React Three Fiber, Tailwind CSS |
 | **Backend** | FastAPI, Firestore, Firebase Storage, Cloud Run |
 | **AI/ML** | Vertex AI, Gemini 2.5 Flash, Veo 3.1 |
-| **Agents** | Google ADK, MCP (Model Context Protocol), OneMCP BigQuery |
+| **Agents** | Google ADK, MCP (Model Context Protocol), Google Cloud MCP servers |
 | **Infrastructure** | Google Cloud Run, Cloud Build, Artifact Registry |
 
 ## 🚀 Quick Start

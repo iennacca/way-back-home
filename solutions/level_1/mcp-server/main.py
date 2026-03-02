@@ -8,10 +8,10 @@ This MCP server provides tools for analyzing crash site evidence:
 Built with FastMCP for simple, Pythonic MCP server development.
 Deployed to Cloud Run with HTTP transport for remote access.
 
-Note: Astronomical analysis is handled separately via OneMCP BigQuery,
+Note: Astronomical analysis is handled separately via Google Cloud MCP server for BigQuery,
 demonstrating the difference between:
 - Custom MCP (this server): You write the tool logic
-- OneMCP (BigQuery): Google hosts pre-built tools
+- Google Cloud MCP servers (BigQuery): Google hosts pre-built tools
 
 This is the COMPLETE SOLUTION.
 """
