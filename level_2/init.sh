@@ -8,126 +8,107 @@ handle_error() {
   exit 1
 }
 
-# --- Part 1: Find or Create Google Cloud Project ID ---
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# =============================================================================
+# Step 0: Check Google Cloud Authentication
+# =============================================================================
+echo "Checking Google Cloud authentication..."
+
+if ! gcloud auth print-access-token > /dev/null 2>&1; then
+    echo -e "${RED}Error: Not authenticated with Google Cloud.${NC}"
+    echo "Please run: gcloud auth login"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Authenticated${NC}"
+
+# =============================================================================
+# Step 1: Create a New Google Cloud Project
+# =============================================================================
 PROJECT_FILE="$HOME/project_id.txt"
-PROJECT_ID_SET=false
+CODELAB_PROJECT_PREFIX="waybackhome"
+PREFIX_LEN=${#CODELAB_PROJECT_PREFIX}
+MAX_SUFFIX_LEN=$(( 30 - PREFIX_LEN - 1 ))
 
-# 0. Check for existing project_id.txt (Optional but helpful)
-if [ -s "$PROJECT_FILE" ]; then
-    EXISTING_PROJECT_ID=$(cat "$PROJECT_FILE" | tr -d '[:space:]')
-    echo "--- Found previously saved project ID: $EXISTING_PROJECT_ID ---"
-    if gcloud projects describe "$EXISTING_PROJECT_ID" --quiet >/dev/null 2>&1; then
-        echo "Verified '$EXISTING_PROJECT_ID' access."
-        FINAL_PROJECT_ID=$EXISTING_PROJECT_ID
-        PROJECT_ID_SET=true
-        gcloud config set project "$FINAL_PROJECT_ID" 2>/dev/null
-    else
-        echo "Saved ID '$EXISTING_PROJECT_ID' is invalid or inaccessible. Ignoring."
-        rm "$PROJECT_FILE"
-    fi
-fi
+echo ""
+echo -e "${YELLOW}Creating a new Google Cloud project...${NC}"
 
-if [ "$PROJECT_ID_SET" = false ]; then
-    echo "--- Setup Google Cloud Project ID ---"
+# Generate a random project ID
+RANDOM_SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c "$MAX_SUFFIX_LEN")
+RANDOM_PROJECT_ID="${CODELAB_PROJECT_PREFIX}-${RANDOM_SUFFIX}"
 
-    # 1. First try to grab existing active project ID
-    ACTIVE_PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
-    if [ "$ACTIVE_PROJECT_ID" = "(unset)" ]; then ACTIVE_PROJECT_ID=""; fi
+echo -e "Attempting to create project: ${CYAN}${RANDOM_PROJECT_ID}${NC}"
 
-    if [ -n "$ACTIVE_PROJECT_ID" ]; then
-        echo "Detected currently active project: $ACTIVE_PROJECT_ID"
-        if gcloud projects describe "$ACTIVE_PROJECT_ID" --quiet >/dev/null 2>&1; then
-            echo "Verified '$ACTIVE_PROJECT_ID' access. Using it."
-            FINAL_PROJECT_ID="$ACTIVE_PROJECT_ID"
-            PROJECT_ID_SET=true
-        else
-            echo "Warning: Detected active project '$ACTIVE_PROJECT_ID' but cannot describe it."
-            echo "Proceeding to project selection..."
-        fi
-    fi
-fi
+if gcloud projects create "$RANDOM_PROJECT_ID" --labels=environment=development --quiet; then
+    echo -e "${GREEN}✓ Successfully created project '${RANDOM_PROJECT_ID}'.${NC}"
+    FINAL_PROJECT_ID="$RANDOM_PROJECT_ID"
+else
+    echo -e "${RED}Auto-creation failed. Falling back to manual selection.${NC}"
 
-# Search for an existing waybackhome-* project
-if [ "$PROJECT_ID_SET" = false ]; then
-    echo "Searching for existing waybackhome project..."
-    FOUND_PROJECT=$(gcloud projects list --filter="projectId:waybackhome-*" --format="value(projectId)" --sort-by=~createTime --limit=1 2>/dev/null)
-
-    if [ -n "$FOUND_PROJECT" ]; then
-        echo "✓ Found existing project: $FOUND_PROJECT"
-        FINAL_PROJECT_ID="$FOUND_PROJECT"
-        PROJECT_ID_SET=true
-        gcloud config set project "$FINAL_PROJECT_ID" --quiet 2>/dev/null
-        echo "$FINAL_PROJECT_ID" > "$PROJECT_FILE"
-    fi
-fi
-
-# Last resort: if no project found, offer to create or enter one
-if [ "$PROJECT_ID_SET" = false ]; then
-    # Generate a random default ID
-    CODELAB_PROJECT_PREFIX="waybackhome"
-    PREFIX_LEN=${#CODELAB_PROJECT_PREFIX}
-    MAX_SUFFIX_LEN=$(( 30 - PREFIX_LEN - 1 ))
-    RANDOM_SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c "$MAX_SUFFIX_LEN")
-    RANDOM_PROJECT_ID="${CODELAB_PROJECT_PREFIX}-${RANDOM_SUFFIX}"
-
+    # Fallback: let user pick or retry with a new random ID
     while true; do
-        echo -e "\nSelect a Project ID:"
-        echo "1. Press Enter to CREATE a new project: $RANDOM_PROJECT_ID"
-        echo "2. Or type an existing Project ID to use."
+        RANDOM_SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c "$MAX_SUFFIX_LEN")
+        SUGGESTED_ID="${CODELAB_PROJECT_PREFIX}-${RANDOM_SUFFIX}"
+
+        echo ""
+        echo "Select a Project ID:"
+        echo "  1. Press Enter to CREATE a new project: $SUGGESTED_ID"
+        echo "  2. Or type a custom Project ID to create."
         read -p "Project ID: " USER_INPUT
-        
-        TARGET_ID="${USER_INPUT:-$RANDOM_PROJECT_ID}"
-        
-        if [[ -z "$TARGET_ID" ]]; then
-            echo "Project ID cannot be empty."
+
+        TARGET_ID="${USER_INPUT:-$SUGGESTED_ID}"
+
+        if [ -z "$TARGET_ID" ]; then
+            echo -e "${RED}Project ID cannot be empty.${NC}"
             continue
         fi
 
-        echo "Checking status of '$TARGET_ID'..."
-
-        # Check if exists/accessible
-        if gcloud projects describe "$TARGET_ID" >/dev/null 2>&1; then
-            echo "Project '$TARGET_ID' exists and is accessible."
+        echo "Attempting to create '$TARGET_ID'..."
+        if gcloud projects create "$TARGET_ID" --labels=environment=development --quiet; then
+            echo -e "${GREEN}✓ Successfully created project '$TARGET_ID'.${NC}"
             FINAL_PROJECT_ID="$TARGET_ID"
             break
         else
-            # Try to create it
-            echo "Project '$TARGET_ID' not found (or no access). Attempting to create..."
-            if gcloud projects create "$TARGET_ID" --quiet; then
-                echo "Successfully created '$TARGET_ID'."
-                FINAL_PROJECT_ID="$TARGET_ID"
-                break
-            else
-                echo "Failed to create '$TARGET_ID'. Please try a different ID."
-                # Loop continues
-            fi
+            echo -e "${RED}Failed to create '$TARGET_ID'. Please try a different ID.${NC}"
         fi
     done
 fi
 
-# Final setup with the selected ID
-echo -e "\n--- Finalizing Setup for: $FINAL_PROJECT_ID ---"
+# =============================================================================
+# Step 2: Set Active Project and Save Project ID
+# =============================================================================
+echo -e "\n--- Configuring project: ${CYAN}${FINAL_PROJECT_ID}${NC} ---"
 
-# Save project ID first to ensure persistence
-if [ -n "$FINAL_PROJECT_ID" ]; then
-    echo "$FINAL_PROJECT_ID" > "$PROJECT_FILE"
-    if [ -f "$PROJECT_FILE" ]; then
-        echo "Project ID successfully saved to $PROJECT_FILE"
-    else
-        echo "Warning: Failed to confirm saving Project ID to $PROJECT_FILE"
-    fi
-else
-    handle_error "Project ID is empty. Cannot save."
+gcloud config set project "$FINAL_PROJECT_ID" --quiet || handle_error "Failed to set active project."
+
+# Save project ID for reuse across levels
+echo "$FINAL_PROJECT_ID" > "$PROJECT_FILE"
+echo -e "${GREEN}✓ Project ID saved to ${PROJECT_FILE}${NC}"
+echo -e "  Verify with: ${CYAN}gcloud config set project \$(cat ~/project_id.txt) --quiet${NC}"
+
+# =============================================================================
+# Step 3: Check and Enable Billing
+# =============================================================================
+echo ""
+echo -e "${YELLOW}Setting up billing for the new project...${NC}"
+
+# Pre-install billing library (needed by billing-enablement.py)
+pip install --quiet --user google-cloud-billing 2>/dev/null || true
+
+# Resolve path to billing-enablement.py (same directory as this script)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if ! python3 "${SCRIPT_DIR}/billing-enablement.py"; then
+    echo ""
+    echo -e "${RED}Billing setup incomplete. Please configure billing and try again.${NC}"
+    exit 1
 fi
 
-gcloud config set project "$FINAL_PROJECT_ID" || handle_error "Failed to set project."
-
-# --- Part 2: Install Dependencies and Run Billing Setup ---
-echo -e "\n--- Installing Python dependencies ---"
-pip install --upgrade --user google-cloud-billing || handle_error "Failed to install Python libraries."
-
-echo -e "\n--- Running the Billing Enablement Script ---"
-python3 billing-enablement.py || handle_error "Billing check failed."
-
-echo -e "\n--- Full Setup Complete ---"
+echo -e "\n${GREEN}✅ Setup complete! Project '${FINAL_PROJECT_ID}' is ready.${NC}"
 exit 0
