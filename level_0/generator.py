@@ -69,47 +69,99 @@ def generate_explorer_avatar() -> dict:
     #
     # Hint: You need to use types.GenerateContentConfig
     # =========================================================================
-    chat = None # Replace this line
+    chat = client.chats.create(
+        model="gemini-2.5-flash-image",  # Nano Banana - Gemini with image generation
+        config=types.GenerateContentConfig(
+            response_modalities=["TEXT", "IMAGE"]
+        )
+    )
 
-    # =========================================================================
-    # MODULE_5_STEP_2_GENERATE_PORTRAIT
-    # =========================================================================
-    # TODO: Generate the explorer portrait
-    #
-    # 1. Create a portrait_prompt string that includes:
-    #    - APPEARANCE, USERNAME, and SUIT_COLOR variables
-    #    - Style requirements (digital illustration, white background, etc.)
-    #
-    # 2. Send the prompt using chat.send_message(portrait_prompt)
-    #
-    # 3. Extract the image from the response:
-    #    - Loop through portrait_response.candidates[0].content.parts
-    #    - Find the part where part.inline_data is not None
-    #    - Convert to PIL Image: Image.open(io.BytesIO(part.inline_data.data))
-    #    - Save to "outputs/portrait.png"
-    #
-    # 4. Print progress messages for user feedback
-    # =========================================================================
-    portrait_image = None # Replace this section
+    # MODULE_5_STEP_2_GENERATE_PORTRAIT (Photo-based version)
+    
+    # Load your photo
+    photo_path = "/home/jerry_chaves/my_photo.jpg"  # Update this path!
+    user_photo = Image.open(photo_path)
+    
+    # Convert photo to bytes for the API
+    photo_buffer = io.BytesIO()
+    user_photo.save(photo_buffer, format="JPEG")
+    photo_bytes = photo_buffer.getvalue()
+    
+    portrait_prompt = f"""Transform this person into a stylized space explorer portrait.
 
-    # =========================================================================
+PRESERVE from the original photo:
+- The person's facial features, face shape, and likeness
+- Their general expression and personality
+- Any distinctive features (glasses, facial hair, etc.)
+
+TRANSFORM with this style:
+- Digital illustration style, clean lines, vibrant saturated colors
+- Add a futuristic space suit with the name "{USERNAME}" on a shoulder patch
+- Suit color: {SUIT_COLOR}
+- Background: Pure solid white (#FFFFFF) - no gradients or elements
+- Frame: Head and shoulders, 3/4 view
+- Lighting: Soft diffused studio lighting
+- Art style: Modern animated movie character (Pixar/Dreamworks aesthetic)
+
+The result should be clearly recognizable as THIS specific person, but illustrated as a heroic space explorer."""
+
+    print("🎨 Transforming your photo into an explorer portrait...")
+    
+    # Send both the prompt AND the image
+    portrait_response = chat.send_message([
+        portrait_prompt,
+        types.Part.from_bytes(data=photo_bytes, mime_type="image/jpeg")
+    ])
+    
+    # Rest of the extraction code stays the same...    
+    # Extract the image from the response.
+    # Gemini returns a response with multiple "parts" - we need to find the image part.
+    portrait_image = None
+    for part in portrait_response.candidates[0].content.parts:
+        if part.inline_data is not None:
+            # Found the image! Convert from bytes to PIL Image and save.
+            image_bytes = part.inline_data.data
+            portrait_image = Image.open(io.BytesIO(image_bytes))
+            portrait_image.save("outputs/portrait.png")
+            break
+    
+    if portrait_image is None:
+        raise Exception("Failed to generate portrait - no image in response")
+    
+    print("✓ Portrait generated!")
+
     # MODULE_5_STEP_3_GENERATE_ICON
-    # =========================================================================
-    # TODO: Generate a consistent map icon
-    #
-    # 1. Create an icon_prompt that asks for the SAME character
-    #    - Emphasize consistency: "SAME person, SAME face, SAME suit"
-    #    - Request tighter crop (head and shoulders only)
-    #    - Request white background and square aspect ratio
-    #
-    # 2. Send the prompt using chat.send_message(icon_prompt)
-    #    - The chat session remembers the character from step 2!
-    #
-    # 3. Extract and save the icon image to "outputs/icon.png"
-    #
-    # 4. Print progress messages for user feedback
-    # =========================================================================
-    icon_image = None # Replace this section
+    # Second turn: Generate a consistent icon for the map.
+    # Because we're in the same chat session, Gemini remembers the character
+    # from the portrait and will maintain visual consistency.
+    icon_prompt = """Now create a circular map icon of this SAME character.
+
+CRITICAL REQUIREMENTS:
+- SAME person, SAME face, SAME expression, SAME suit — maintain perfect consistency with the portrait
+- Tighter crop: just the head and very top of shoulders
+- Background: Pure solid white (#FFFFFF)
+- Optimized for small display sizes (will be used as a 64px map marker)
+- Keep the exact same art style, colors, and lighting as the portrait
+- Square 1:1 aspect ratio
+
+This icon must be immediately recognizable as the same character from the portrait."""
+
+    print("🖼️  Creating map icon...")
+    icon_response = chat.send_message(icon_prompt)
+    
+    # Extract the icon image from the response
+    icon_image = None
+    for part in icon_response.candidates[0].content.parts:
+        if part.inline_data is not None:
+            image_bytes = part.inline_data.data
+            icon_image = Image.open(io.BytesIO(image_bytes))
+            icon_image.save("outputs/icon.png")
+            break
+    
+    if icon_image is None:
+        raise Exception("Failed to generate icon - no image in response")
+    
+    print("✓ Icon generated!")
 
     return {
         "portrait_path": "outputs/portrait.png",
